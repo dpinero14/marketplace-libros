@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "ms-dotnettools.csharp",
+    "ms-dotnettools.csdevkit",
+    "humao.rest-client",
+    "alexcvzz.vscode-sqlite",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens",
+    "visualstudioexptteam.vscodeintellicode",
+    "editorconfig.editorconfig",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

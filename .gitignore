@@ -1,0 +1,60 @@
+## Ignorar archivos de Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pidb
+*.sln.docstates
+
+## Ignorar archivos de build
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Ignorar archivos de Rider
+.idea/
+*.sln.iml
+
+## Ignorar base de datos SQLite
+*.db
+*.db-shm
+*.db-wal
+
+## Ignorar archivos de usuario
+*.user
+*.suo
+*.cache
+
+## Ignorar paquetes NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+
+## Ignorar archivos temporales
+*.tmp
+*.temp
+*.log
+
+## Ignorar node_modules
+node_modules/
+
+## Ignorar carpetas de publicación
+publish/
+dist/
+
+## Ignorar archivos del sistema
+.DS_Store
+Thumbs.db

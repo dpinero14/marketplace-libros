@@ -1,0 +1,15 @@
+.nav-menu {
+    padding: 0;
+}
+
+@media (max-width: 767.98px) {
+    .nav-menu {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+    }
+
+    .nav-menu .nav-item {
+        padding: 0.5rem;
+    }
+}

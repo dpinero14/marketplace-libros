@@ -1,0 +1,32 @@
+{
+    "dotnet.defaultSolution": "BibliotecaPersonal/BibliotecaPersonal.csproj",
+    "files.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/*.db": true,
+        "**/*.db-shm": true,
+        "**/*.db-wal": true
+    },
+    "files.watcherExclude": {
+        "**/bin/**": true,
+        "**/obj/**": true
+    },
+    "search.exclude": {
+        "**/bin": true,
+        "**/obj": true
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
+    },
+    "[csharp]": {
+        "editor.defaultFormatter": "ms-dotnettools.csharp"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[razor]": {
+        "editor.defaultFormatter": "ms-dotnettools.csharp"
+    }
+}

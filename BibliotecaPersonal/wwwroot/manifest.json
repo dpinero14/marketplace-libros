@@ -1,0 +1,23 @@
+{
+  "name": "Biblioteca Personal",
+  "short_name": "BibliotecaApp",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#512BD4",
+  "description": "Gestiona tu biblioteca personal y consulta tus libros desde cualquier lugar",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}

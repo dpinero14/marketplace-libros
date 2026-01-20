@@ -1,0 +1,45 @@
+@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Inicio - Biblioteca Personal</PageTitle>
+
+<div class="home-container">
+    <h1>📚 Biblioteca Personal</h1>
+    
+    <div class="hero">
+        <h2>Gestiona tu colección de libros</h2>
+        <p>
+            Digitaliza tu biblioteca física y consúltala desde cualquier lugar. 
+            ¿Estás en una librería y no sabés si ya tenés ese libro? ¡Consultá en segundos!
+        </p>
+    </div>
+
+    <div class="feature-cards">
+        <div class="card">
+            <h3>🔍 Búsqueda Rápida</h3>
+            <p>Encontrá tus libros por título, autor o ISBN instantáneamente.</p>
+            <a href="/biblioteca" class="btn btn-primary">Ir a Mi Biblioteca</a>
+        </div>
+
+        <div class="card">
+            <h3>📸 Agregar Libros</h3>
+            <p>Subí fotos de la tapa y extrae la información automáticamente.</p>
+            <a href="/agregar" class="btn btn-secondary">Agregar Libro</a>
+        </div>
+
+        <div class="card">
+            <h3>🏷️ Gestionar Estado</h3>
+            <p>Marca libros para conservar, vender o intercambiar.</p>
+        </div>
+    </div>
+
+    <div class="stats" style="margin-top: 2rem; padding: 1rem; background: #f5f5f5; border-radius: 8px;">
+        <p style="margin: 0; color: #666;">
+            <strong>Próximamente:</strong> Integración con Google Vertex AI para extracción automática de datos desde imágenes.
+        </p>
+    </div>
+</div>
+
+@code {
+    
+}

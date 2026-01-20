@@ -1,0 +1,176 @@
+@page "/biblioteca"
+@rendermode InteractiveServer
+@inject IBookService BookService
+
+<PageTitle>Mi Biblioteca</PageTitle>
+
+<div class="biblioteca-container">
+    <h1>📚 Mi Biblioteca</h1>
+
+    <div class="search-section">
+        <input type="text" 
+               class="search-input" 
+               placeholder="Buscar por título, autor o ISBN..." 
+               @bind="searchQuery" 
+               @bind:event="oninput"
+               @onkeyup="HandleSearch" />
+        
+        <div class="filter-buttons">
+            <button class="filter-btn @(selectedStatus == null ? "active" : "")" 
+                    @onclick="() => FilterByStatus(null)">
+                Todos (@totalCount)
+            </button>
+            <button class="filter-btn @(selectedStatus == BookStatus.Keep ? "active" : "")" 
+                    @onclick="() => FilterByStatus(BookStatus.Keep)">
+                Conservar (@keepCount)
+            </button>
+            <button class="filter-btn @(selectedStatus == BookStatus.Sell ? "active" : "")" 
+                    @onclick="() => FilterByStatus(BookStatus.Sell)">
+                Vender (@sellCount)
+            </button>
+            <button class="filter-btn @(selectedStatus == BookStatus.Swap ? "active" : "")" 
+                    @onclick="() => FilterByStatus(BookStatus.Swap)">
+                Intercambiar (@swapCount)
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <p><em>Cargando...</em></p>
+    }
+    else if (!books.Any())
+    {
+        <div class="empty-state">
+            <p>No se encontraron libros.</p>
+            <a href="/agregar" class="btn btn-primary">Agregar tu primer libro</a>
+        </div>
+    }
+    else
+    {
+        <div class="books-table-container">
+            <table class="books-table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Autor(es)</th>
+                        <th>Año</th>
+                        <th>ISBN</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var book in books)
+                    {
+                        <tr>
+                            <td><strong>@book.Title</strong></td>
+                            <td>@book.Authors</td>
+                            <td>@book.PublicationYear</td>
+                            <td>@book.Isbn13</td>
+                            <td>
+                                <span class="status-badge status-@book.Status.ToString().ToLower()">
+                                    @GetStatusText(book.Status)
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn-icon" @onclick="() => EditBook(book.Id)" title="Editar">✏️</button>
+                                <button class="btn-icon" @onclick="() => DeleteBook(book.Id)" title="Eliminar">🗑️</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Book> books = new();
+    private string searchQuery = "";
+    private BookStatus? selectedStatus = null;
+    private bool isLoading = true;
+
+    private int totalCount = 0;
+    private int keepCount = 0;
+    private int sellCount = 0;
+    private int swapCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBooks();
+    }
+
+    private async Task LoadBooks()
+    {
+        isLoading = true;
+        
+        var allBooks = await BookService.GetAllBooksAsync();
+        
+        // Calcular contadores
+        totalCount = allBooks.Count;
+        keepCount = allBooks.Count(b => b.Status == BookStatus.Keep);
+        sellCount = allBooks.Count(b => b.Status == BookStatus.Sell);
+        swapCount = allBooks.Count(b => b.Status == BookStatus.Swap);
+
+        // Aplicar filtros
+        books = allBooks;
+        ApplyFilters();
+        
+        isLoading = false;
+    }
+
+    private async Task HandleSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            await LoadBooks();
+        }
+        else
+        {
+            isLoading = true;
+            var allBooks = await BookService.SearchBooksAsync(searchQuery);
+            books = allBooks;
+            ApplyFilters();
+            isLoading = false;
+        }
+    }
+
+    private async Task FilterByStatus(BookStatus? status)
+    {
+        selectedStatus = status;
+        await LoadBooks();
+    }
+
+    private void ApplyFilters()
+    {
+        if (selectedStatus.HasValue)
+        {
+            books = books.Where(b => b.Status == selectedStatus.Value).ToList();
+        }
+    }
+
+    private void EditBook(Guid id)
+    {
+        // TODO: Implementar navegación a página de edición
+    }
+
+    private async Task DeleteBook(Guid id)
+    {
+        if (await BookService.DeleteBookAsync(id))
+        {
+            await LoadBooks();
+        }
+    }
+
+    private string GetStatusText(BookStatus status)
+    {
+        return status switch
+        {
+            BookStatus.Keep => "Conservar",
+            BookStatus.Sell => "Vender",
+            BookStatus.Swap => "Intercambiar",
+            _ => status.ToString()
+        };
+    }
+}

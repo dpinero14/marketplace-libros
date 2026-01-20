@@ -1,0 +1,13 @@
+.nav-menu {
+    background-color: var(--light-bg, #f8f9fa);
+}
+
+.top-row {
+    background-color: var(--primary-color, #512BD4);
+}
+
+@media (max-width: 767.98px) {
+    .nav-menu {
+        width: 100%;
+    }
+}
