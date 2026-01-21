@@ -1,6 +1,7 @@
 ﻿@page "/agregar"
 @rendermode InteractiveServer
 @inject IBookService BookService
+@inject IBookExtractionService ExtractionService
 @inject NavigationManager Navigation
 @using System.ComponentModel.DataAnnotations
 
@@ -23,55 +24,122 @@
         </div>
     }
 
-    <div class="form-card">
-        <EditForm Model="newBook" OnValidSubmit="HandleSaveBook">
-            <DataAnnotationsValidator />
+    @if (currentStep == 1)
+    {
+        <div class="form-card">
+            <h2>Opción 1: Subir fotos del libro</h2>
+            <p>Sube fotos de la tapa, contratapa o página legal (hasta 3 imágenes)</p>
 
-            <div class="form-group mb-3">
-                <label class="form-label">Título *</label>
-                <InputText @bind-Value="newBook.Title" class="form-control" placeholder="Título del libro" />
-                <ValidationMessage For="@(() => newBook.Title)" class="text-danger" />
+            <div class="upload-area">
+                <InputFile OnChange="HandleFileSelection" multiple accept="image/*" class="file-input" />
+                <div class="upload-prompt">
+                    📸 Click para seleccionar imágenes
+                </div>
             </div>
 
-            <div class="form-group mb-3">
-                <label class="form-label">Autor(es) *</label>
-                <InputText @bind-Value="newBook.Authors" class="form-control" placeholder="Nombre del autor" />
-                <ValidationMessage For="@(() => newBook.Authors)" class="text-danger" />
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="form-label">Año de Publicación</label>
-                <InputNumber TValue="int?" @bind-Value="newBook.PublicationYear" class="form-control"
-                    placeholder="2024" />
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="form-label">ISBN-13</label>
-                <InputText @bind-Value="newBook.Isbn13" class="form-control" placeholder="978-XXX-XXX-XXX-X" />
-            </div>
-
-            <div class="form-group mb-3">
-                <label class="form-label">Estado</label>
-                <InputSelect TValue="BookStatus" @bind-Value="newBook.Status" class="form-control">
-                    <option value="@BookStatus.Keep">Conservar</option>
-                    <option value="@BookStatus.Sell">Vender</option>
-                    <option value="@BookStatus.Swap">Intercambiar</option>
-                </InputSelect>
-            </div>
+            @if (selectedFiles.Any())
+            {
+                <div class="selected-files">
+                    <h3>Imágenes seleccionadas:</h3>
+                    <ul>
+                        @foreach (var file in selectedFiles)
+                        {
+                            <li>@file.Name</li>
+                        }
+                    </ul>
+                </div>
+            }
 
             <div class="button-group mt-4">
                 <button type="button" class="btn btn-secondary" @onclick="CancelAdd">
                     Cancelar
                 </button>
-                <button type="submit" class="btn btn-success" disabled="@isSaving">
-                    @(isSaving ? "Guardando..." : "💾 Guardar")
+                <button type="button" class="btn btn-info" @onclick="ShowManualForm">
+                    Cargar manualmente
                 </button>
-                <button type="button" class="btn btn-primary" @onclick="SaveAndAddAnother" disabled="@isSaving">
-                    @(isSaving ? "Guardando..." : "💾 Guardar y agregar otro")
+                <button type="button" class="btn btn-primary" @onclick="ProcessImages"
+                    disabled="@(!selectedFiles.Any() || isProcessing)">
+                    @(isProcessing ? "Procesando..." : "Extraer información →")
                 </button>
             </div>
-        </EditForm>
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="form-card">
+            <h2>Información del libro</h2>
+
+            @if (extractedFromImages)
+            {
+                <div class="alert alert-info">
+                    ℹ️ Información extraída de las imágenes. Revisa y corrige si es necesario.
+                </div>
+            }
+
+            <EditForm Model="newBook" OnValidSubmit="HandleSaveBook">
+                <DataAnnotationsValidator />
+
+                <div class="form-group mb-3">
+                    <label class="form-label">Título *</label>
+                    <InputText @bind-Value="newBook.Title" class="form-control" placeholder="Título del libro" />
+                    <ValidationMessage For="@(() => newBook.Title)" class="text-danger" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label">Autor(es) *</label>
+                    <InputText @bind-Value="newBook.Authors" class="form-control" placeholder="Nombre del autor" />
+                    <ValidationMessage For="@(() => newBook.Authors)" class="text-danger" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label">Año de Publicación</label>
+                    <InputNumber TValue="int?" @bind-Value="newBook.PublicationYear" class="form-control"
+                        placeholder="2024" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label">ISBN-13</label>
+                    <InputText @bind-Value="newBook.Isbn13" class="form-control" placeholder="978-XXX-XXX-XXX-X" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label">Editorial</label>
+                    <InputText @bind-Value="newBook.Publisher" class="form-control" placeholder="Editorial" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label">Idioma</label>
+                    <InputText @bind-Value="newBook.Language" class="form-control" placeholder="ES, EN, etc." />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label">Formato</label>
+                    <InputText @bind-Value="newBook.Format" class="form-control" placeholder="Tapa blanda, ebook, etc." />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label">Estado</label>
+                    <InputSelect TValue="BookStatus" @bind-Value="newBook.Status" class="form-control">
+                        <option value="@BookStatus.Keep">Conservar</option>
+                        <option value="@BookStatus.Sell">Vender</option>
+                        <option value="@BookStatus.Swap">Intercambiar</option>
+                    </InputSelect>
+                </div>
+
+                <div class="button-group mt-4">
+                    <button type="button" class="btn btn-secondary" @onclick="BackToUpload">
+                        ← Volver
+                    </button>
+                    <button type="submit" class="btn btn-success" disabled="@isSaving">
+                        @(isSaving ? "Guardando..." : "💾 Guardar")
+                    </button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveAndAddAnother" disabled="@isSaving">
+                        @(isSaving ? "Guardando..." : "💾 Guardar y agregar otro")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    }
 </div>
 
 <style>
@@ -183,10 +251,79 @@
         color: #721c24;
     }
 
+    .alert-info {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+    }
+
     .text-danger {
         color: #dc3545;
         font-size: 0.875rem;
         margin-top: 0.25rem;
+    }
+
+    .upload-area {
+        position: relative;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        padding: 3rem;
+        text-align: center;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        margin: 1rem 0;
+    }
+
+    .upload-area:hover {
+        border-color: #007bff;
+    }
+
+    .file-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .upload-prompt {
+        font-size: 1.1rem;
+        color: #666;
+    }
+
+    .selected-files {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .selected-files h3 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .selected-files ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .selected-files li {
+        padding: 0.25rem 0;
+        color: #555;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .btn-info:hover:not(:disabled) {
+        background-color: #138496;
     }
 
     .mb-3 {
@@ -201,13 +338,94 @@
 @code {
     private BookFormModel newBook = new();
     private bool isSaving = false;
+    private bool isProcessing = false;
     private string errorMessage = string.Empty;
     private string successMessage = string.Empty;
     private bool shouldAddAnother = false;
+    private int currentStep = 1;
+    private List<IBrowserFile> selectedFiles = new();
+    private bool extractedFromImages = false;
 
     protected override void OnInitialized()
     {
         newBook.Status = BookStatus.Keep;
+    }
+
+    private void HandleFileSelection(InputFileChangeEventArgs e)
+    {
+        selectedFiles.Clear();
+        var files = e.GetMultipleFiles(3);
+        selectedFiles.AddRange(files);
+    }
+
+    private async Task ProcessImages()
+    {
+        if (!selectedFiles.Any()) return;
+
+        isProcessing = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var imageStreams = new List<Stream>();
+
+            foreach (var file in selectedFiles)
+            {
+                var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10 MB max
+                imageStreams.Add(stream);
+            }
+
+            var result = await ExtractionService.ExtractBookInfoFromImagesAsync(imageStreams);
+
+            // Cerrar streams
+            foreach (var stream in imageStreams)
+            {
+                await stream.DisposeAsync();
+            }
+
+            if (!result.IsBook)
+            {
+                errorMessage = "No se pudo detectar información de un libro en las imágenes. Por favor, intenta con otras fotos o carga los datos manualmente.";
+                return;
+            }
+
+            // Mapear resultado a formulario
+            newBook.Title = result.Title ?? string.Empty;
+            newBook.Authors = result.Authors.Any() ? string.Join(", ", result.Authors) : string.Empty;
+            newBook.PublicationYear = result.PublicationYear;
+            newBook.Isbn13 = result.Isbn13;
+            newBook.Publisher = result.Publisher;
+            newBook.Language = result.Language;
+            newBook.Format = result.Format;
+            newBook.Confidence = result.Confidence;
+
+            extractedFromImages = true;
+            currentStep = 2;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al procesar imágenes: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowManualForm()
+    {
+        currentStep = 2;
+        extractedFromImages = false;
+    }
+
+    private void BackToUpload()
+    {
+        currentStep = 1;
+        newBook = new BookFormModel { Status = BookStatus.Keep };
+        selectedFiles.Clear();
+        extractedFromImages = false;
     }
 
     private async Task HandleSaveBook()
@@ -226,7 +444,6 @@
         errorMessage = string.Empty;
         successMessage = string.Empty;
 
-        // Validación simple
         if (string.IsNullOrWhiteSpace(newBook.Title))
         {
             errorMessage = "El título es obligatorio.";
@@ -249,8 +466,11 @@
                 Authors = newBook.Authors.Trim(),
                 PublicationYear = newBook.PublicationYear,
                 Isbn13 = newBook.Isbn13?.Trim(),
+                Publisher = newBook.Publisher?.Trim(),
+                Language = newBook.Language?.Trim(),
+                Format = newBook.Format?.Trim(),
                 Status = newBook.Status,
-                Confidence = 1.0m
+                Confidence = newBook.Confidence
             };
 
             await BookService.CreateBookAsync(book);
@@ -259,6 +479,9 @@
             {
                 successMessage = "Libro guardado exitosamente. Puedes agregar otro.";
                 newBook = new BookFormModel { Status = BookStatus.Keep };
+                currentStep = 1;
+                selectedFiles.Clear();
+                extractedFromImages = false;
                 shouldAddAnother = false;
             }
             else
@@ -281,7 +504,6 @@
         Navigation.NavigateTo("/biblioteca");
     }
 
-    // Modelo del formulario
     private class BookFormModel
     {
         [Required(ErrorMessage = "El título es obligatorio")]
@@ -294,6 +516,14 @@
 
         public string? Isbn13 { get; set; }
 
+        public string? Publisher { get; set; }
+
+        public string? Language { get; set; }
+
+        public string? Format { get; set; }
+
         public BookStatus Status { get; set; } = BookStatus.Keep;
+
+        public decimal Confidence { get; set; } = 1.0m;
     }
 }

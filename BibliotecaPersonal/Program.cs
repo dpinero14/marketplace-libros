@@ -14,6 +14,7 @@ builder.Services.AddDbContext<BibliotecaDbContext>(options =>
 
 // Registrar servicios
 builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddHttpClient<IBookExtractionService, GeminiBookExtractionService>();
 
 var app = builder.Build();
 
